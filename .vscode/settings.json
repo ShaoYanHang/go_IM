@@ -1,0 +1,5 @@
+{
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.hover.delay": 50,
+    "editor.quickSuggestionsDelay": 50
+}

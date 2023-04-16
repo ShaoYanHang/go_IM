@@ -12,7 +12,6 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"golang.org/x/net/websocket"
 )
 
 // GetUserList
@@ -186,11 +185,11 @@ func FindUserByNameAndPwd(ctx *gin.Context) {
 var upGrade = websocket.Upgrader{
 	CheckOrigin: func (r *http.Request) bool {
 		return true
-	}
+	},
 }
 
 func SendMsg(ctx *gin.Context) {
-	ws, err := upGrade.upGrade(ctx.Writer, ctx.Request, nil)
+	ws, err := upGrade.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -205,6 +204,18 @@ func SendMsg(ctx *gin.Context) {
 	MsgHandler(ws, ctx)
 }
 
-func MsgHandler() {
-
+func MsgHandler(ws *websocket.Conn, ctx *gin.Context) {
+	for {
+		msg, err := utils.Subscribe(ctx, utils.PublishKey)
+		if err != nil {
+			fmt.Println(err)
+		}
+		tm := time.Now().Format("2006-01-02 15:04:05")
+		m := fmt.Sprintf("[ws][%s]:%s", tm, msg)
+		err = ws.WriteMessage(1, []byte(m))
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	
 }

@@ -6,10 +6,12 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/gorilla/websocket v1.5.0
 	github.com/spf13/viper v1.15.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.8.12
+	gopkg.in/fatih/set.v0 v0.2.1
 	gorm.io/driver/mysql v1.4.7
 	gorm.io/gorm v1.24.6
 )
