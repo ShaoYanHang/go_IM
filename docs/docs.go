@@ -31,6 +31,21 @@ const docTemplate = `{
                 }
             }
         },
+        "/toRegister": {
+            "get": {
+                "tags": [
+                    "首页"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/CreateUser": {
             "post": {
                 "tags": [

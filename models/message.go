@@ -1,7 +1,7 @@
 package models
 
 import (
-	"crypto/ecdsa"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -15,9 +15,9 @@ import (
 
 type Message struct {
 	gorm.Model
-	FormId   string // 发送者
-	TargetId string // 接收者
-	Type     string // 群聊 私聊 广播
+	FormId   int64 // 发送者
+	TargetId int64 // 接收者
+	Type     int // 群聊 私聊 广播
 	Media    string // 文字 图片 音频
 	Content  string // 内容
 	Pic      string
@@ -48,10 +48,10 @@ func Chat(writer http.ResponseWriter, request *http.Request) {
 
 	query := request.URL.Query()
 	Id := query.Get("userId")
-	userId, _ = strconv.ParseInt(Id, 10, 64)
-	msgType := query.Get("type")
-	targetId := query.Get("TargetId")
-	context := query.Get("context")
+	userId, _ := strconv.ParseInt(Id, 10, 64)
+	// msgType := query.Ge  t("type")
+	// targetId := query.Get("TargetId")
+	// context := query.Get("context")
 
 	isvalida := true // checktoken
 
@@ -84,6 +84,8 @@ func Chat(writer http.ResponseWriter, request *http.Request) {
 	// 6. 完成接受逻辑
 	go recvProc(node)
 
+	sendMsg(userId, []byte("欢迎进入聊天室"))
+
 }
 
 func sendProc(node *Node) {
@@ -107,7 +109,7 @@ func recvProc(node *Node) {
 			return 
 		}
 		broadMsg(data)	// 广播
-		fmt.Println("[ws] <<<< ", data)
+		fmt.Println("[ws] <<<< ", string(data))
 	}
 }
 
@@ -168,6 +170,30 @@ func udpRecvProc() {
 }
 
 // 后端调度逻辑处理
-func dispatch() {
+func dispatch(data []byte) {
+	msg := Message{}
+	err := json.Unmarshal(data, &msg)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	switch msg.Type {
+	case 1:	// 私信
+		sendMsg(msg.TargetId, data)
+	// case 2:	// int64
+	// 	sendGroupMsg()
+	// case 3:	// 广播
+	// 	sendAllMsg()
+	// case 4:
 	
+		}	
+}
+
+func sendMsg(userId int64, msg []byte) {
+	rwLocker.RLock()
+	node, ok := clientMap[userId]
+	rwLocker.RUnlock()
+	if ok {
+		node.DataQueue <- msg
+	}
 }

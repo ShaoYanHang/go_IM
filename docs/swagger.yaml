@@ -10,6 +10,15 @@ paths:
             type: string
       tags:
       - 首页
+  /toRegister:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - 首页
   /user/CreateUser:
     post:
       parameters:

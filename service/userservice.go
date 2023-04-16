@@ -40,9 +40,14 @@ func GetUserList(ctx *gin.Context) {
 // @Router /user/CreateUser [post]
 func CreateUser(ctx *gin.Context) {
 	user := models.UserBasic{}
-	user.Name = ctx.Query("name")
-	PassWord := ctx.Query("password")
-	RePassWord := ctx.Query("repassword")
+	// user.Name = ctx.Query("name")
+	// PassWord := ctx.Query("password")
+	// RePassWord := ctx.Query("repassword")
+
+
+	user.Name = ctx.PostForm("name")
+	PassWord := ctx.PostForm("password")
+	RePassWord := ctx.PostForm("Identity")
 
 	salt := fmt.Sprintf("%06d", rand.Int31())
 
@@ -55,6 +60,17 @@ func CreateUser(ctx *gin.Context) {
 	if data.Name != "" {
 		ctx.JSON(-1, gin.H{
 			"message": "用户名已注册",
+			"code":    -1, // 0 ok -1 false
+			"data":    user,
+		})
+		return
+	}
+
+	fmt.Println(user.Name,PassWord,RePassWord)
+	if user.Name == "" || PassWord == "" || RePassWord == "" {
+
+		ctx.JSON(-1, gin.H{
+			"message": "账号名及密码不能为空",
 			"code":    -1, // 0 ok -1 false
 			"data":    user,
 		})
@@ -148,8 +164,10 @@ func FindUserByNameAndPwd(ctx *gin.Context) {
 
 	data := models.UserBasic{}
 
-	name := ctx.Query("name")
-	password := ctx.Query("password")
+	// name := ctx.Query("name")
+	// password := ctx.Query("password")
+	name := ctx.Request.FormValue("name")
+	password := ctx.Request.FormValue("password")
 	user := models.FindUserByName(name)
 
 	if user.Name == "" {
@@ -218,4 +236,8 @@ func MsgHandler(ws *websocket.Conn, ctx *gin.Context) {
 		}
 	}
 	
+}
+
+func SendUserMsg(ctx *gin.Context) {
+	models.Chat(ctx.Writer, ctx.Request)
 }
