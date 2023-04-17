@@ -241,3 +241,23 @@ func MsgHandler(ws *websocket.Conn, ctx *gin.Context) {
 func SendUserMsg(ctx *gin.Context) {
 	models.Chat(ctx.Writer, ctx.Request)
 }
+
+
+// SearchFriends
+// @Summary 查询好友列表
+// @Tags 首页模块
+// @Param userId formData string false "userId"
+// @Success 200 {string} json{"code","message","data"}
+// @Router /searchFriends [post]
+func SearchFriends(ctx *gin.Context) {
+	id, _ := strconv.Atoi(ctx.Request.FormValue("userId"))
+	users := models.SearchFriend(uint(id))
+
+	
+	// ctx.JSON(http.StatusOK, gin.H{
+	// 	"code":    0, // 0 ok -1 false
+	// 	"message": "查询好友列表成功",
+	// 	"data":    users,
+	// })
+	utils.RespOKList(ctx.Writer, users, len(users))
+}

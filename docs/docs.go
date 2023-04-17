@@ -16,29 +16,23 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/index": {
-            "get": {
+        "/searchFriends": {
+            "post": {
                 "tags": [
-                    "首页"
+                    "首页模块"
                 ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
+                "summary": "查询好友列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "userId",
+                        "name": "userId",
+                        "in": "formData"
                     }
-                }
-            }
-        },
-        "/toRegister": {
-            "get": {
-                "tags": [
-                    "首页"
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "code\",\"message\",\"data\"}",
                         "schema": {
                             "type": "string"
                         }

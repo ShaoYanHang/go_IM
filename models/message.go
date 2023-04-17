@@ -18,7 +18,7 @@ type Message struct {
 	FormId   int64 // 发送者
 	TargetId int64 // 接收者
 	Type     int // 群聊 私聊 广播
-	Media    string // 文字 图片 音频
+	Media    int // 文字 图片 音频
 	Content  string // 内容
 	Pic      string
 	Url      string
@@ -40,6 +40,30 @@ type Node struct {
 var clientMap map[int64]*Node = make(map[int64]*Node, 0)
 
 var rwLocker sync.RWMutex
+
+
+// 后端调度逻辑处理
+func dispatch(data []byte) {
+	msg := Message{}
+	err := json.Unmarshal(data, &msg)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	switch msg.Type {
+	case 1:	// 私信
+		fmt.Println("dispath data: ", string(data))
+		sendMsg(msg.TargetId, data)
+	// case 2:	// int64
+	// 	sendGroupMsg()
+	// case 3:	// 广播
+	// 	sendAllMsg()
+	// case 4:
+	
+		}	
+}
+
+
 
 // 需要: 发送者ID 接收者ID 消息类型 发送的内容 发送类型
 func Chat(writer http.ResponseWriter, request *http.Request) {
@@ -92,6 +116,7 @@ func sendProc(node *Node) {
 	for {
 		select {
 		case data := <- node.DataQueue:
+			fmt.Println("sendMsg >>>>> msg",string(data))
 			err := node.Conn.WriteMessage(websocket.TextMessage, data)
 			if err != nil {
 				fmt.Println(err)
@@ -108,8 +133,10 @@ func recvProc(node *Node) {
 			fmt.Println(err)
 			return 
 		}
-		broadMsg(data)	// 广播
-		fmt.Println("[ws] <<<< ", string(data))
+		dispatch(data)
+
+		// broadMsg(data)	// 广播
+		fmt.Println("[ws] recvProc <<<< ", string(data))
 	}
 }
 
@@ -122,6 +149,7 @@ func broadMsg(data []byte) {
 func init() {
 	go udpSendProc()
 	go udpRecvProc()
+	fmt.Println("init goroutine")
 }
 
 // 完成udp数据发送协程
@@ -139,6 +167,7 @@ func udpSendProc() {
 	for {
 		select {
 		case data := <- udpsendChan:
+			fmt.Println("udpSendProc data", string(data))
 			_, err := conn.Write(data)
 			if err != nil {
 				fmt.Println(err)
@@ -160,40 +189,24 @@ func udpRecvProc() {
 	defer conn.Close()
 	for {
 		var buf [512]byte
+
 		n, err := conn.Read(buf[0:])
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		fmt.Println("udpRecvProc  data :", string(buf[0:n]))
 		dispatch(buf[0:n])
 	}
 }
 
-// 后端调度逻辑处理
-func dispatch(data []byte) {
-	msg := Message{}
-	err := json.Unmarshal(data, &msg)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	switch msg.Type {
-	case 1:	// 私信
-		sendMsg(msg.TargetId, data)
-	// case 2:	// int64
-	// 	sendGroupMsg()
-	// case 3:	// 广播
-	// 	sendAllMsg()
-	// case 4:
-	
-		}	
-}
 
 func sendMsg(userId int64, msg []byte) {
 	rwLocker.RLock()
 	node, ok := clientMap[userId]
 	rwLocker.RUnlock()
 	if ok {
+		fmt.Println("sendMsg >>> userID: ", userId, "  msg:", string(msg))
 		node.DataQueue <- msg
 	}
 }

@@ -1,24 +1,21 @@
 info:
   contact: {}
 paths:
-  /index:
-    get:
+  /searchFriends:
+    post:
+      parameters:
+      - description: userId
+        in: formData
+        name: userId
+        type: string
       responses:
         "200":
-          description: OK
+          description: code","message","data"}
           schema:
             type: string
+      summary: 查询好友列表
       tags:
-      - 首页
-  /toRegister:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      tags:
-      - 首页
+      - 首页模块
   /user/CreateUser:
     post:
       parameters:
